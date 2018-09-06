@@ -78,6 +78,7 @@ func NewClient(options Options) (*Client, error) {
 	if len(options.PassFile) != 0 {
 		client.pcpPassFile = options.PassFile
 		client.pcpPassFileUser = true
+		client.readPCPPassFile()
 	}
 	if err := client.Validate(); err != nil {
 		return nil, err
@@ -86,6 +87,23 @@ func NewClient(options Options) (*Client, error) {
 		return nil, err
 	}
 	return client, nil
+}
+
+func (c *Client) readPCPPassFile() error {
+	f, err := os.Open(c.options.PassFile)
+	if err != nil {
+		return err
+	}
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		result := strings.Split(line, ":")
+		c.options.Hostname = result[0]
+		c.options.Port, _ = strconv.Atoi(result[1])
+		c.options.Username = result[2]
+		c.options.Password = result[3]
+	}
+	return nil
 }
 
 func (c *Client) createPCPTempFile() error {
