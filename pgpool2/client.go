@@ -98,8 +98,14 @@ func (c *Client) readPCPPassFile() error {
 	for scanner.Scan() {
 		line := scanner.Text()
 		result := strings.Split(line, ":")
+		if len(result) != 4 {
+			return fmt.Errorf("Err: A Passfile must contain hostname:port:username:password")
+		}
 		c.options.Hostname = result[0]
-		c.options.Port, _ = strconv.Atoi(result[1])
+		c.options.Port, err = strconv.Atoi(result[1])
+		if err != nil {
+			return err
+		}
 		c.options.Username = result[2]
 		c.options.Password = result[3]
 	}
